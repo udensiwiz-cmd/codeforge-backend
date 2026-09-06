@@ -6,7 +6,7 @@ import time
 
 app = FastAPI(
     title="CodeForge AI Studio API",
-    version="1.2.0"
+    version="1.2.1"
 )
 
 
