@@ -2,15 +2,17 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import uuid
 import time
+import json
+import os
 
 
 app = FastAPI(
     title="CodeForge AI Studio API",
-    version="1.2.1"
+    version="1.3.0"
 )
 
 
-jobs = {}
+JOBS_FILE = "jobs.json"
 
 
 class VideoRequest(BaseModel):
@@ -18,6 +20,27 @@ class VideoRequest(BaseModel):
     style: str
     duration: str
     ratio: str
+
+
+def load_jobs():
+
+    if not os.path.exists(JOBS_FILE):
+        return {}
+
+    try:
+
+        with open(JOBS_FILE, "r") as file:
+            return json.load(file)
+
+    except Exception:
+
+        return {}
+
+
+def save_jobs(jobs):
+
+    with open(JOBS_FILE, "w") as file:
+        json.dump(jobs, file, indent=4)
 
 
 @app.get("/")
@@ -32,6 +55,8 @@ def home():
 @app.post("/generate-video")
 def generate_video(request: VideoRequest):
 
+    jobs = load_jobs()
+
     job_id = str(uuid.uuid4())
 
     jobs[job_id] = {
@@ -43,6 +68,8 @@ def generate_video(request: VideoRequest):
         "created_at": int(time.time())
     }
 
+    save_jobs(jobs)
+
     return {
         "status": "queued",
         "job_id": job_id,
@@ -52,6 +79,8 @@ def generate_video(request: VideoRequest):
 
 @app.get("/job/{job_id}")
 def get_job(job_id: str):
+
+    jobs = load_jobs()
 
     if job_id not in jobs:
 
