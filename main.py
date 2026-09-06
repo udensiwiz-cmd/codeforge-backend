@@ -33,4 +33,3 @@ def generate_video(request: VideoRequest):
         "duration": request.duration,
         "ratio": request.ratio
     }
-}
